@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <title><%= @page[:title] %></title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link rel="stylesheet" href="/style/default.css" type="text/css">
+</head>
+
+<body>
+  <div class="container">
+    <h1><%= @page[:title] %></h1>
+
+<%= yield %>
+  </div>
+  
+  <script type="text/javascript" src="/js/jquery-1.6.min.js"></script>
+  <script type="text/javascript" src="/js/Math.uuid.js"></script>
+  <script type="text/javascript" src="/js/charter.jquery.js"></script>
+  <script type="text/javascript" src="/js/application.js"></script>
+</body>
+</html>
+
