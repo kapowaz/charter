@@ -28,7 +28,7 @@ $(document).ready(function() {
           // e.g. seriesData => {series: 'Items', key: '5_inch_gloss', value: 1000}
           table.find('tbody tr[data-key=' + seriesData.key + '] td').each(function(i, element){
             if (i == chart.series.indexOf(seriesData.series)) {
-              var inputElement = $(element).find('input[type=number]').val(seriesData.value);
+              $(element).find('input[type=number]').val(seriesData.value);
               chart.rows[seriesData.key][chart.series.indexOf(seriesData.series)] = seriesData.value;
             }
           });
@@ -83,18 +83,12 @@ $(document).ready(function() {
                 'fill': colours[j]
               });
               
-              // draw an invisible drag handle above each bar
+              var startingY = 0;
+              var startingHeight = 0;
               
-              var handle = chart.graph.rect(xPosition, yPosition, 50, 5).attr({
-                'cursor': 'move',
-                'stroke-width': 0,
-                'fill': 'transparent'
-              }).drag(function(dx, dy){
-                // var newYPosition = Math.round(parseInt(bar.attr('y'),10) + dy);
-                // var newHeight = Math.round(parseInt(bar.attr('height'),10) + (-1 * dy));
-                
-                var newYPosition = Math.round(yPosition + dy);
-                var newHeight = Math.round(height + (-1 * dy));
+              var drag = function(dx, dy){
+                var newYPosition = Math.round(startingY + dy);
+                var newHeight = Math.round(startingHeight + (-1 * dy));
                 
                 if (newYPosition > 440) {
                   newYPosition = 440;
@@ -116,7 +110,23 @@ $(document).ready(function() {
                 
                 // set new value by raising event.
                 table.trigger('seriesChange.charter', seriesChange);
-              }, null, null);
+              };
+              
+              var dragStart = function(){
+                startingY = parseInt(bar.attr('y'),10);
+                startingHeight = parseInt(bar.attr('height'),10);
+              };
+              var dragEnd = function(){
+                startingY = 0;
+                startingHeight = 0;
+              };
+                            
+              // draw an invisible drag handle above each bar
+              var handle = chart.graph.rect(xPosition, yPosition, 50, 5).attr({
+                'cursor': 'move',
+                'stroke-width': 0,
+                'fill': 'transparent'
+              }).drag(drag, dragStart, dragEnd);
               
             });
             i++;
@@ -191,8 +201,6 @@ $(document).ready(function() {
 
         // bind event handlers to this table
         table.bind('seriesChange.charter', seriesChangedHandler);
-        
-        // console.dir(chart);
       }
     });
     
