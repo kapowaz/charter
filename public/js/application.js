@@ -7,10 +7,4 @@ $(document).ready(function() {
   
   $('table#product_orders').charter();
   
-  // to test event triggering/binding
-  $('a.testlink').click(function(e){
-    e.preventDefault();
-    $('table#product_orders').trigger('seriesChange.charter', {series: 'Items', key: '5_inch_gloss', value: 1000});
-  });
-  
 });
