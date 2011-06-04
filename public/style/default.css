@@ -30,6 +30,7 @@ body p
 
 body a
 {
+  color:blue;
   text-decoration:none;
   font-weight:bold;
 }
@@ -41,20 +42,15 @@ body a:hover
 
 table.charter
 {
-  width:100%;
+  width:520px;
   border-collapse:collapse;
-  margin-bottom:50px;
+  margin:50px auto;
 }
 
 table.charter thead th
 {
   text-transform:uppercase;
   color:rgba(0,0,0,0.5);
-}
-
-table.charter tbody th
-{
-  text-align:left;
 }
 
 table.charter tbody td
@@ -69,6 +65,7 @@ table.charter input[type=number]
   -webkit-border-radius:3px;
   -moz-border-radius:3px;
   font-size:1.2em;
+  width:100px;
 }
 
 table.charter input[type=number]:focus

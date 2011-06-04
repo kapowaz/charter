@@ -30,8 +30,8 @@ $(document).ready(function() {
             if (i == chart.series.indexOf(seriesData.series)) {
               $(element).find('input[type=number]').val(seriesData.value);
             }
-          });          
-        }
+          });
+        } // seriesChangedHandler();
         
         var redrawChart = function drawChart(chart){
           chart.graph.clear();
@@ -50,50 +50,61 @@ $(document).ready(function() {
             var markerLine = chart.graph.path('M95 ' + yPosition + 'L620 ' + yPosition);
             markerLine.attr({'stroke-width': 0.5});
 
-            var labelText = chart.yScale / vmarkers * i;
-            var label = chart.graph.text(75, yPosition, labelText);
-            label.attr({
+            var labelText = Math.round(chart.yScale / vmarkers * i);
+            label = chart.graph.text(75, yPosition, labelText).attr({
               'font-family': 'Lucida Grande, Calibri, Tahoma, sans-serif',
               'font-size': '11px'
             });
           }
 
-          // draw tick marks for horizontal scale
+          // draw bars and tick marks for horizontal scale
           var hmarkers = 5;
-          for (var i = 0; i < hmarkers; i++) {
-            var xPosition = (520 / (hmarkers - 1) * i) + 100;
-            var markerLine = chart.graph.path('M' + xPosition + ' 440L' + xPosition + ' 450');
-            markerLine.attr({'stroke-width': 0.5});
-
-            if (i < chart.rows.length) {
-              var labelText = chart.rows[i].label;
-              var label = chart.graph.text(xPosition + 65, 460, labelText);
-              label.attr({
-                'font-family': 'Lucida Grande, Calibri, Tahoma, sans-serif',
-                'font-size': '11px',
-                'width': 130
-              });
-            }
-          }
-
-          // draw bars
           var i = 0;
           jQuery.each(chart.rows, function(key, row){
+            
+            var xPosition = (520 / (hmarkers - 1) * i) + 100;
+            chart.graph.path('M' + xPosition + ' 440L' + xPosition + ' 450').attr({'stroke-width': 0.5});
+            label = chart.graph.text(xPosition + 65, 460, row.label).attr({
+              'font-family': 'Lucida Grande, Calibri, Tahoma, sans-serif',
+              'font-size': '11px',
+              'width': 130
+            });
+            
             jQuery.each(row.values, function(j, value){
               var series = chart.series[j];
               var height = (value / chart.yScale) * 420;
               var x = (i * 130) + (j * 60) + 110;
               var y = 420 - height + 20;
-              var bar = chart.graph.rect(x, y, 50, height);
-
-              bar.attr({
+              chart.graph.rect(x, y, 50, height).attr({
                 'stroke-width': 0.5,
                 'fill': colours[j]
               });
             });
             i++;
           });
-        };
+          chart.graph.path('M620 440L620 450').attr({'stroke-width': 0.5});
+          
+          // draw series key container frame
+          var keyContainerHeight = (chart.series.length * 30) + 10;
+          var keyContainerYPos = 230 - (keyContainerHeight / 2);
+          
+          chart.graph.rect(630, keyContainerYPos, 80, keyContainerHeight);
+          
+          // draw series key
+          jQuery.each(chart.series, function(i, name){
+            chart.graph.rect(640, (30 * i) + keyContainerYPos + 10, 20, 20).attr({
+              'stroke-width': 0.5,
+              'fill': colours[i]
+            });
+            chart.graph.text(665, (30 * i) + keyContainerYPos + 20, name).attr({
+              'font-family': 'Lucida Grande, Calibri, Tahoma, sans-serif',
+              'font-size': '11px',
+              'width': 80,
+              'text-anchor': 'start'
+            });
+          });
+          
+        }; // redrawChart();
         
         table.attr('data-charter-id', chart.uuid);
         
@@ -112,16 +123,18 @@ $(document).ready(function() {
           $(this).find('td input[type=number]').each(function(i, input){
             row.values.push(parseInt($(this).val(),10));
             
-            $(input).bind('change blur', function(){
+            $(input).bind('change blur click', function(){
               chart.rows[$(this).closest('tr').attr('data-key')].values[i] = $(this).val();
               redrawChart(chart);
             });
+            
           });
           
           chart.rows[$(this).attr('data-key')] = row;
         });
         
-        // determine the maximum scale for the Y axis by finding out the largest value in the series, and rounding up to the nearest order of magnitude
+        // determine the maximum scale for the Y axis by finding out the largest 
+        // value in the series, and rounding up to the nearest order of magnitude
         var largest = 0;        
         jQuery.each(chart.rows, function(key, row){
           jQuery.each(row.values, function(j, value){
