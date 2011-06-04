@@ -48,15 +48,22 @@ $(document).ready(function() {
           var vmarkers = 6;
           for (var count = vmarkers; count > 0; count--) {
             var yPosition = (420 / vmarkers) * (vmarkers - count) + 20;
-            var markerLine = chart.graph.path('M95 ' + yPosition + 'L620 ' + yPosition);
-            markerLine.attr({'stroke-width': 0.5});
+            chart.graph.path('M90 ' + yPosition + 'L620 ' + yPosition).attr({'stroke-width': 0.5});
 
             var labelText = Math.round(chart.yScale / vmarkers * count);
-            label = chart.graph.text(75, yPosition, labelText).attr({
+            chart.graph.text(80, yPosition, labelText).attr({
               'font-family': 'Lucida Grande, Calibri, Tahoma, sans-serif',
-              'font-size': '11px'
+              'font-size': '11px',
+              'text-anchor': 'end'
             });
           }
+          chart.graph.path('M90 440L100 440').attr({'stroke-width': 0.5});
+          chart.graph.text(80, 440, 0).attr({
+            'font-family': 'Lucida Grande, Calibri, Tahoma, sans-serif',
+            'font-size': '11px',
+            'text-anchor': 'end'
+          });
+          
 
           // draw bars and tick marks for horizontal scale
           var hmarkers = 5;
@@ -105,7 +112,7 @@ $(document).ready(function() {
                 var seriesChange = {
                   series: chart.series[j],
                   key: key,
-                  value: Math.round((newHeight / 420) * chart.yScale)
+                  value: Math.round((bar.attr('height') / 420) * chart.yScale)
                 };
                 
                 // set new value by raising event.
