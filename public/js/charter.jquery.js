@@ -28,10 +28,11 @@ $(document).ready(function() {
           // e.g. seriesData => {series: 'Items', key: '5_inch_gloss', value: 1000}
           table.find('tbody tr[data-key=' + seriesData.key + '] td').each(function(i, element){
             if (i == chart.series.indexOf(seriesData.series)) {
-              $(element).find('input[type=number]').val(seriesData.value);
+              var inputElement = $(element).find('input[type=number]').val(seriesData.value);
+              chart.rows[seriesData.key][chart.series.indexOf(seriesData.series)] = seriesData.value;
             }
           });
-        } // seriesChangedHandler();
+        }; // seriesChangedHandler();
         
         var redrawChart = function drawChart(chart){
           chart.graph.clear();
@@ -45,12 +46,12 @@ $(document).ready(function() {
 
           // draw tick marks for vertical scale
           var vmarkers = 6;
-          for (var i = vmarkers; i > 0; i--) {
-            var yPosition = (400 / vmarkers) * (vmarkers - i) + 20;
+          for (var count = vmarkers; count > 0; count--) {
+            var yPosition = (400 / vmarkers) * (vmarkers - count) + 20;
             var markerLine = chart.graph.path('M95 ' + yPosition + 'L620 ' + yPosition);
             markerLine.attr({'stroke-width': 0.5});
 
-            var labelText = Math.round(chart.yScale / vmarkers * i);
+            var labelText = Math.round(chart.yScale / vmarkers * count);
             label = chart.graph.text(75, yPosition, labelText).attr({
               'font-family': 'Lucida Grande, Calibri, Tahoma, sans-serif',
               'font-size': '11px'
@@ -71,14 +72,49 @@ $(document).ready(function() {
             });
             
             jQuery.each(row.values, function(j, value){
+              
+              // draw each bar
               var series = chart.series[j];
               var height = (value / chart.yScale) * 420;
-              var x = (i * 130) + (j * 60) + 110;
-              var y = 420 - height + 20;
-              chart.graph.rect(x, y, 50, height).attr({
+              var xPosition = (i * 130) + (j * 60) + 110;
+              var yPosition = 440 - height;
+              var bar = chart.graph.rect(xPosition, yPosition, 50, height).attr({
                 'stroke-width': 0.5,
                 'fill': colours[j]
               });
+              
+              // draw an invisible drag handle above each bar
+              
+              var handle = chart.graph.rect(xPosition, yPosition, 50, 5).attr({
+                'cursor': 'move',
+                'stroke-width': 0,
+                'fill': 'transparent'
+              }).drag(function(dx, dy){
+                var newYPosition = Math.round(parseInt(bar.attr('y'),10) + dy);
+                var newHeight = Math.round(parseInt(bar.attr('height'),10) + (-1 * dy));
+                
+                if (newYPosition > 440) {
+                  newYPosition = 440;
+                  newHeight = 0;
+                }
+                if (newYPosition < 20) {
+                  newYPosition = 20;
+                  newHeight = 420;
+                }
+                
+                bar.attr({y: newYPosition, height: newHeight});
+                handle.attr({y: newYPosition});
+                
+                var seriesChange = {
+                  series: chart.series[j],
+                  key: key,
+                  value: Math.round((newHeight / 420) * chart.yScale)
+                };
+                
+                // set new value by raising event.
+                table.trigger('seriesChange.charter', seriesChange);
+              }, null, null);
+              
             });
             i++;
           });
