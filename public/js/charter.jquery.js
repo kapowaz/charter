@@ -47,7 +47,7 @@ $(document).ready(function() {
           // draw tick marks for vertical scale
           var vmarkers = 6;
           for (var count = vmarkers; count > 0; count--) {
-            var yPosition = (400 / vmarkers) * (vmarkers - count) + 20;
+            var yPosition = (420 / vmarkers) * (vmarkers - count) + 20;
             var markerLine = chart.graph.path('M95 ' + yPosition + 'L620 ' + yPosition);
             markerLine.attr({'stroke-width': 0.5});
 
@@ -75,7 +75,7 @@ $(document).ready(function() {
               
               // draw each bar
               var series = chart.series[j];
-              var height = (value / chart.yScale) * 420;
+              var height = value / chart.yScale * 420;
               var xPosition = (i * 130) + (j * 60) + 110;
               var yPosition = 440 - height;
               var bar = chart.graph.rect(xPosition, yPosition, 50, height).attr({
