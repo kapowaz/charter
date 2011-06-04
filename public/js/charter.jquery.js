@@ -90,8 +90,11 @@ $(document).ready(function() {
                 'stroke-width': 0,
                 'fill': 'transparent'
               }).drag(function(dx, dy){
-                var newYPosition = Math.round(parseInt(bar.attr('y'),10) + dy);
-                var newHeight = Math.round(parseInt(bar.attr('height'),10) + (-1 * dy));
+                // var newYPosition = Math.round(parseInt(bar.attr('y'),10) + dy);
+                // var newHeight = Math.round(parseInt(bar.attr('height'),10) + (-1 * dy));
+                
+                var newYPosition = Math.round(yPosition + dy);
+                var newHeight = Math.round(height + (-1 * dy));
                 
                 if (newYPosition > 440) {
                   newYPosition = 440;
