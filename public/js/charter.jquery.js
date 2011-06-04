@@ -132,7 +132,7 @@ $(document).ready(function() {
               var handle = chart.graph.rect(xPosition, yPosition, 50, 5).attr({
                 'cursor': 'move',
                 'stroke-width': 0,
-                'fill': 'transparent'
+                'fill': 'rgba(0,0,0,0)'
               }).drag(drag, dragStart, dragEnd);
               
             });
