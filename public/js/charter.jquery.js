@@ -8,6 +8,15 @@ $(document).ready(function() {
         0: '#f66c1d',
         1: '#7d007f'
       };
+      var defaultTextStyle = {
+        'font-family': 'Lucida Grande, Calibri, Tahoma, sans-serif',
+        'font-size': '11px'
+      };
+      var verticalLabelStyle = jQuery.extend({'text-anchor': 'end'}, defaultTextStyle);
+      var horizontalLabelStyle = jQuery.extend({'width': 130}, defaultTextStyle);
+      var seriesKeyLabelStyle = jQuery.extend({'width': 80, 'text-anchor': 'start'}, defaultTextStyle);
+      var strokeTickMarks = {'stroke-width': 0.5};
+      var strokeAxes = {'stroke-width': 1};
       
       // has to be a table element
       // has to have a class of charter
@@ -16,7 +25,6 @@ $(document).ready(function() {
       if (this.nodeName == 'TABLE' && table.hasClass('charter') && !table.prop('data-charter-id'))
       {
         var chart = {
-          uuid: Math.uuid(),
           series: [],
           rows: {},
           graph: null,
@@ -25,7 +33,7 @@ $(document).ready(function() {
         
         // event handler for whenever a series’ value is changed
         var seriesChangedHandler = function seriesChangedHandler(e, seriesData){
-          // e.g. seriesData => {series: 'Items', key: '5_inch_gloss', value: 1000}
+          // seriesData => {series: 'Items', key: '5_inch_gloss', value: 1000}
           table.find('tbody tr[data-key=' + seriesData.key + '] td').each(function(i, element){
             if (i == chart.series.indexOf(seriesData.series)) {
               $(element).find('input[type=number]').val(seriesData.value);
@@ -38,31 +46,20 @@ $(document).ready(function() {
           chart.graph.clear();
           
           // draw axes
-          var xAxis = chart.graph.path('M100 440L620 440');
-          var yAxis = chart.graph.path('M100 20L100 440');
-
-          xAxis.attr({'stroke-width': 1});
-          yAxis.attr({'stroke-width': 1});
+          var xAxis = chart.graph.path('M100 440L620 440').attr(strokeAxes);
+          var yAxis = chart.graph.path('M100 20L100 440').attr(strokeAxes);
 
           // draw tick marks for vertical scale
           var vmarkers = 6;
           for (var count = vmarkers; count > 0; count--) {
             var yPosition = (420 / vmarkers) * (vmarkers - count) + 20;
-            chart.graph.path('M90 ' + yPosition + 'L620 ' + yPosition).attr({'stroke-width': 0.5});
+            chart.graph.path('M90 ' + yPosition + 'L620 ' + yPosition).attr(strokeTickMarks);
 
             var labelText = Math.round(chart.yScale / vmarkers * count);
-            chart.graph.text(80, yPosition, labelText).attr({
-              'font-family': 'Lucida Grande, Calibri, Tahoma, sans-serif',
-              'font-size': '11px',
-              'text-anchor': 'end'
-            });
+            chart.graph.text(80, yPosition, labelText).attr(verticalLabelStyle);
           }
-          chart.graph.path('M90 440L100 440').attr({'stroke-width': 0.5});
-          chart.graph.text(80, 440, 0).attr({
-            'font-family': 'Lucida Grande, Calibri, Tahoma, sans-serif',
-            'font-size': '11px',
-            'text-anchor': 'end'
-          });
+          chart.graph.path('M90 440L100 440').attr(strokeTickMarks);
+          chart.graph.text(80, 440, 0).attr(verticalLabelStyle);
           
 
           // draw bars and tick marks for horizontal scale
@@ -71,12 +68,8 @@ $(document).ready(function() {
           jQuery.each(chart.rows, function(key, row){
             
             var xPosition = (520 / (hmarkers - 1) * i) + 100;
-            chart.graph.path('M' + xPosition + ' 440L' + xPosition + ' 450').attr({'stroke-width': 0.5});
-            label = chart.graph.text(xPosition + 65, 460, row.label).attr({
-              'font-family': 'Lucida Grande, Calibri, Tahoma, sans-serif',
-              'font-size': '11px',
-              'width': 130
-            });
+            chart.graph.path('M' + xPosition + ' 440L' + xPosition + ' 450').attr(strokeTickMarks);
+            label = chart.graph.text(xPosition + 65, 460, row.label).attr(horizontalLabelStyle);
             
             jQuery.each(row.values, function(j, value){
               
@@ -100,8 +93,7 @@ $(document).ready(function() {
                 if (newYPosition > 440) {
                   newYPosition = 440;
                   newHeight = 0;
-                }
-                if (newYPosition < 20) {
+                } else if (newYPosition < 20) {
                   newYPosition = 20;
                   newHeight = 420;
                 }
@@ -128,7 +120,7 @@ $(document).ready(function() {
                 startingHeight = 0;
               };
                             
-              // draw an invisible drag handle above each bar
+              // draw an invisible drag handle above each bar, with drag event handlers
               var handle = chart.graph.rect(xPosition, yPosition, 50, 5).attr({
                 'cursor': 'move',
                 'stroke-width': 0,
@@ -138,7 +130,7 @@ $(document).ready(function() {
             });
             i++;
           });
-          chart.graph.path('M620 440L620 450').attr({'stroke-width': 0.5});
+          chart.graph.path('M620 440L620 450').attr(strokeTickMarks);
           
           // draw series key container frame
           var keyContainerHeight = (chart.series.length * 30) + 10;
@@ -152,17 +144,10 @@ $(document).ready(function() {
               'stroke-width': 0.5,
               'fill': colours[i]
             });
-            chart.graph.text(665, (30 * i) + keyContainerYPos + 20, name).attr({
-              'font-family': 'Lucida Grande, Calibri, Tahoma, sans-serif',
-              'font-size': '11px',
-              'width': 80,
-              'text-anchor': 'start'
-            });
+            chart.graph.text(665, (30 * i) + keyContainerYPos + 20, name).attr(seriesKeyLabelStyle);
           });
           
         }; // redrawChart();
-        
-        table.attr('data-charter-id', chart.uuid);
         
         // go through each row th in the thead to determine column headings
         table.find('thead tr th').each(function(){
@@ -199,9 +184,8 @@ $(document).ready(function() {
         });
         chart.yScale = largest.ceilMagnitude();
         
-        // create a container for the Raphael canvas...
+        // create a container for the Raphael SVG canvas...
         var graphContainer = $('<div class="graph"></div>');
-        graphContainer.attr('data-charter-id', chart.uuid);
         table.after(graphContainer);
         chart.graph = Raphael(graphContainer[0], 720, 480);
         redrawChart(chart);
@@ -213,7 +197,7 @@ $(document).ready(function() {
     
   };
   
-  // sample usage:
+  // usage:
   // $('table#foo').charter();
   
 });
