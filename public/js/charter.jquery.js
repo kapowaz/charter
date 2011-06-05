@@ -178,14 +178,13 @@ $(document).ready(function() {
           
         }; // redrawChart();
         
-        
         // go through each row th in the thead to determine column headings
         table.find('thead tr th').each(function(){
           chart.series.push($(this).text());
         });
         
         // go through each row in the tbody to determine values
-        table.find('tbody tr').each(function(){
+        table.find('tbody tr[data-key]').each(function(){
           var row = {
             label: $(this).find('th[scope=row]').text(),
             values: []
