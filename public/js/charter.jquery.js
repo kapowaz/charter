@@ -257,7 +257,8 @@ $(document).ready(function() {
         
         // bind handler for button to add new rows
         var newRowButton = table.find('tbody tr.template td.add a');
-        newRowButton.bind('click', function(){
+        newRowButton.bind('click', function(e){
+          e.preventDefault();
           var newRow = table.find('tbody tr.template').clone();
           var uuid = Math.uuid();
           var values = [];
