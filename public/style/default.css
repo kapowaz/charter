@@ -42,34 +42,56 @@ body a:hover
 
 table.charter
 {
-  width:520px;
   border-collapse:collapse;
-  margin:50px auto;
+  margin:50px 0 50px 0;
+}
+
+table.charter thead td.blank
+{
+  border:1px solid rgba(0,0,0,0.1);
+  background-color:rgba(0,0,0,0.04);
 }
 
 table.charter thead th
 {
   text-transform:uppercase;
-  color:rgba(0,0,0,0.5);
+  border:1px solid rgba(0,0,0,0.1);
+  background-color:rgba(0,0,0,0.04);
+  line-height:1.5em;
+  padding:3px;
+}
+
+table.charter tbody th
+{
+  border:1px solid rgba(0,0,0,0.1);
+  background-color:rgba(0,0,0,0.04);
+  line-height:1.5em;
+  padding:3px;
+  text-align:left;
+  width:150px;
 }
 
 table.charter tbody td
 {
   text-align:center;
+  border:1px solid rgba(0,0,0,0.1);
+  padding-right:5px;
+  width:145px;
+}
+table.charter tbody td.focus
+{
+  background-color:rgba(190,214,236,0.5);  
 }
 
 table.charter input[type=number]
 {
-  border:2px solid rgba(0,0,0,0.3);
-  border-radius:3px;
-  -webkit-border-radius:3px;
-  -moz-border-radius:3px;
-  font-size:1.2em;
-  width:100px;
+  border:none;
+  font-size:1em;
+  line-height:1.5em;
+  padding:2px;
+  width:100%;
+  background:transparent;
+  text-align:right;
 }
 
-table.charter input[type=number]:focus
-{
-  border:2px solid blue;
-  outline:none;
-}
+table.charter input[type=number]:focus { outline:none; }

@@ -5,9 +5,24 @@ $(document).ready(function() {
     $(this).each(function(){
       var table = $(this);
       
-      var colours = {
-        0: '#f66c1d',
-        1: '#7d007f'
+      var metrics = {
+        width: 720,
+        height: 480,
+        padding: {
+          top: 20,
+          right: 100,
+          bottom: 40,
+          left: 100
+        },
+        ticks: {
+          vertical: 6,
+          length: 10
+        },
+        gap: 10,
+        seriesKeySize: 20,
+        seriesKeyGap: 10,
+        seriesKeyLabelGap: 5,
+        seriesColours: ['#c60035', '#00b24f', '#df6a00', '#0021b2', '#dfc300', '#b000b2', '#55c000', '#df2200', '#006fb2', '#df9600', '#4000b2', '#c6d600']
       };
       
       // define a few style objects that'll be used in a few places
@@ -46,40 +61,46 @@ $(document).ready(function() {
           chart.graph.clear();
           
           // draw axes
-          var xAxis = chart.graph.path('M100 440L620 440').attr(strokeAxes);
-          var yAxis = chart.graph.path('M100 20L100 440').attr(strokeAxes);
+          var xAxis = 'M' + metrics.padding.left + ' ' + (metrics.height - metrics.padding.bottom) + 'L' + (metrics.width - metrics.padding.right) + ' ' + (metrics.height - metrics.padding.bottom);
+          var yAxis = 'M' + metrics.padding.left + ' ' + metrics.padding.top + 'L' + metrics.padding.left + ' ' + (metrics.height - metrics.padding.bottom);
+          
+          chart.graph.path(xAxis).attr(strokeAxes);
+          chart.graph.path(yAxis).attr(strokeAxes);
 
           // draw tick marks for vertical scale
-          var vmarkers = 6;
-          for (var count = vmarkers; count > 0; count--) {
-            var yPosition = (420 / vmarkers) * (vmarkers - count) + 20;
-            chart.graph.path('M90 ' + yPosition + 'L620 ' + yPosition).attr(strokeTickMarks);
-
-            var labelText = Math.round(chart.yScale / vmarkers * count);
-            chart.graph.text(80, yPosition, labelText).attr(verticalLabelStyle);
+          for (var count = metrics.ticks.vertical; count > 0; count--) {
+            var yPosition = ((metrics.height - (metrics.padding.top + metrics.padding.bottom)) / metrics.ticks.vertical) * (metrics.ticks.vertical - count) + metrics.padding.top;
+            chart.graph.path('M' + (metrics.padding.left - metrics.ticks.length) + ' ' + yPosition + 'L' + (metrics.width - metrics.padding.right) + ' ' + yPosition).attr(strokeTickMarks);
+            var labelText = Math.round(chart.yScale / metrics.ticks.vertical * count);
+            chart.graph.text(metrics.padding.left - (metrics.ticks.length * 2), yPosition, labelText).attr(verticalLabelStyle);
           }
-          chart.graph.path('M90 440L100 440').attr(strokeTickMarks);
-          chart.graph.text(80, 440, 0).attr(verticalLabelStyle);
+          
+          // final vertical tick mark
+          
+          var finalTick = 'M' + (metrics.padding.left - metrics.ticks.length) + ' ' + (metrics.height - metrics.padding.bottom) + 'L' + metrics.padding.left + ' ' + (metrics.height - metrics.padding.bottom);
+          chart.graph.path(finalTick).attr(strokeTickMarks);
+          chart.graph.text(metrics.padding.left - (metrics.ticks.length * 2), (metrics.height - metrics.padding.bottom), 0).attr(verticalLabelStyle);
 
           // draw bars and tick marks for horizontal scale
-          var hmarkers = 5;
           var i = 0;
           jQuery.each(chart.rows, function(key, row){
             
-            var xPosition = (520 / (hmarkers - 1) * i) + 100;
-            chart.graph.path('M' + xPosition + ' 440L' + xPosition + ' 450').attr(strokeTickMarks);
+            var xPosition = ((metrics.width - (metrics.padding.left + metrics.padding.right)) / objectLength(chart.rows) * i) + metrics.padding.left;
+            chart.graph.path('M' + xPosition + ' ' + (metrics.height - metrics.padding.bottom) + 'L' + xPosition + ' ' + (metrics.height - metrics.padding.bottom + metrics.ticks.length)).attr(strokeTickMarks);
             label = chart.graph.text(xPosition + 65, 460, row.label).attr(horizontalLabelStyle);
             
             jQuery.each(row.values, function(j, value){
-              
               // draw each bar
               var series = chart.series[j];
-              var height = value / chart.yScale * 420;
-              var xPosition = (i * 130) + (j * 60) + 110;
-              var yPosition = 440 - height;
-              var bar = chart.graph.rect(xPosition, yPosition, 50, height).attr({
+              var sectionWidth = (metrics.width - (metrics.padding.left + metrics.padding.right)) / objectLength(chart.rows);
+              var barHeight = value / chart.yScale * (metrics.height - (metrics.padding.top + metrics.padding.bottom));
+              var barWidth = (sectionWidth - ((chart.series.length + 1) * metrics.gap)) / chart.series.length;
+              var xPosition = (i * sectionWidth) + (j * (barWidth + metrics.gap)) + metrics.padding.left + metrics.gap;
+              var yPosition = (metrics.height - metrics.padding.bottom) - barHeight;
+              
+              var bar = chart.graph.rect(xPosition, yPosition, barWidth, barHeight).attr({
                 'stroke-width': 0.5,
-                'fill': colours[j]
+                'fill': metrics.seriesColours[j]
               });
               
               var startingY = 0;
@@ -89,12 +110,12 @@ $(document).ready(function() {
                 var newYPosition = Math.round(startingY + dy);
                 var newHeight = Math.round(startingHeight + (-1 * dy));
                 
-                if (newYPosition > 440) {
-                  newYPosition = 440;
+                if (newYPosition > metrics.height - metrics.padding.bottom) {
+                  newYPosition = metrics.height - metrics.padding.bottom;
                   newHeight = 0;
-                } else if (newYPosition < 20) {
-                  newYPosition = 20;
-                  newHeight = 420;
+                } else if (newYPosition < metrics.padding.top) {
+                  newYPosition = metrics.padding.top;
+                  newHeight = metrics.height - (metrics.padding.top + metrics.padding.bottom);
                 }
                 
                 bar.attr({y: newYPosition, height: newHeight});
@@ -103,7 +124,7 @@ $(document).ready(function() {
                 var seriesChange = {
                   series: chart.series[j],
                   key: key,
-                  value: Math.round((bar.attr('height') / 420) * chart.yScale)
+                  value: Math.round((bar.attr('height') / (metrics.height - (metrics.padding.top + metrics.padding.bottom))) * chart.yScale)
                 };
                 
                 // trigger custom event that the series’ value has changed
@@ -120,7 +141,7 @@ $(document).ready(function() {
               };
                             
               // draw an invisible drag handle above each bar, with drag event handlers
-              var handle = chart.graph.rect(xPosition, yPosition, 50, 5).attr({
+              var handle = chart.graph.rect(xPosition, yPosition, barWidth, 5).attr({
                 'cursor': 'move',
                 'stroke-width': 0,
                 'fill': 'rgba(0,0,0,0)'
@@ -129,21 +150,33 @@ $(document).ready(function() {
             });
             i++;
           });
-          chart.graph.path('M620 440L620 450').attr(strokeTickMarks);
           
-          // draw series key container frame
-          var keyContainerHeight = (chart.series.length * 30) + 10;
-          var keyContainerYPos = 230 - (keyContainerHeight / 2);
+          // final horizontal tickmark
+          finalTick = 'M' + (metrics.width - metrics.padding.right) + ' ' + (metrics.height - metrics.padding.bottom) + 
+                      'L' + (metrics.width - metrics.padding.right) + ' ' + ((metrics.height - metrics.padding.bottom) + metrics.ticks.length);
+          chart.graph.path(finalTick).attr(strokeTickMarks);
           
-          chart.graph.rect(630, keyContainerYPos, 80, keyContainerHeight);
+          // draw series key
+          var seriesKeyWidth = metrics.padding.right - (metrics.seriesKeyGap * 2);
+          var seriesKeyHeight = (chart.series.length * (metrics.seriesKeySize + metrics.seriesKeyGap)) + metrics.seriesKeyGap;
+          var seriesKeyXPosition = metrics.width - metrics.padding.right + metrics.seriesKeyGap;
+          var seriesKeyYPosition = ((metrics.height - (metrics.padding.top + metrics.padding.bottom))/2) - (seriesKeyHeight / 2) + metrics.padding.top;
+          chart.graph.rect(seriesKeyXPosition, seriesKeyYPosition, seriesKeyWidth, seriesKeyHeight);
           
           // draw series key
           jQuery.each(chart.series, function(i, name){
-            chart.graph.rect(640, (30 * i) + keyContainerYPos + 10, 20, 20).attr({
+            chart.graph.rect(
+              (metrics.width - metrics.padding.right) + (metrics.seriesKeyGap * 2), 
+              ((metrics.seriesKeySize + metrics.seriesKeyGap) * i) + seriesKeyYPosition + metrics.seriesKeyGap, 
+              metrics.seriesKeySize, metrics.seriesKeySize).attr({
               'stroke-width': 0.5,
-              'fill': colours[i]
+              'fill': metrics.seriesColours[i]
             });
-            chart.graph.text(665, (30 * i) + keyContainerYPos + 20, name).attr(seriesKeyLabelStyle);
+            
+            chart.graph.text(
+              (metrics.width - metrics.padding.right) + (metrics.seriesKeyGap * 2) + metrics.seriesKeySize + metrics.seriesKeyLabelGap, 
+              ((metrics.seriesKeySize + metrics.seriesKeyGap) * i) + seriesKeyYPosition + metrics.seriesKeyGap + (metrics.seriesKeySize / 2),
+              name).attr(seriesKeyLabelStyle);
           });
           
         }; // redrawChart();
@@ -163,6 +196,14 @@ $(document).ready(function() {
           
           $(this).find('td input[type=number]').each(function(i, input){
             row.values.push(parseInt($(this).val(),10));
+
+            $(input).bind('focus', function(){
+              $(this).closest('td').addClass('focus');
+            });
+            
+            $(input).bind('blur', function(){
+              $(this).closest('td').removeClass('focus');
+            });
             
             $(input).bind('change blur click keyup', function(){
               // prevent manual entry of out-of-range values
@@ -195,7 +236,7 @@ $(document).ready(function() {
         // create a container for the Raphael SVG canvas...
         var graphContainer = $('<div class="graph"></div>');
         table.after(graphContainer);
-        chart.graph = Raphael(graphContainer[0], 720, 480);
+        chart.graph = Raphael(graphContainer[0], metrics.width, metrics.height);
         redrawChart(chart);
 
         // bind event handlers to this table

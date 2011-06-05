@@ -6,3 +6,11 @@ Number.prototype.ceilMagnitude = function(){
     return 1;
   }
 };
+
+var objectLength = function objectLength(object) {
+  var size = 0, key;
+  for (key in object) {
+    if (object.hasOwnProperty(key)) size++;
+  }
+  return size;
+};
