@@ -164,7 +164,15 @@ $(document).ready(function() {
           $(this).find('td input[type=number]').each(function(i, input){
             row.values.push(parseInt($(this).val(),10));
             
-            $(input).bind('change blur click', function(){
+            $(input).bind('change blur click keyup', function(){
+              // prevent manual entry of out-of-range values
+              if ($(this).val() > 6000) {
+                $(this).val(6000);
+              } else if ($(this).val() < 0) {
+                $(this).val(0);
+              } else if (isNaN($(this).val())) {
+                $(this).val(chart.rows[$(this).closest('tr').attr('data-key')].values[i]);
+              }              
               chart.rows[$(this).closest('tr').attr('data-key')].values[i] = $(this).val();
               redrawChart(chart);
             });
