@@ -178,6 +178,35 @@ $(document).ready(function() {
           
         }; // redrawChart();
         
+        var focusInput = function focusLabelInput(){
+          $(this).parent().addClass('focus');
+        };
+        
+        var blurInput = function blurLabelInput(){
+          $(this).parent().removeClass('focus');
+        };
+        
+        var changeLabelInput = function changeLabelInput(){
+          var dataKey = $(this).closest('tr').attr('data-key');
+          chart.rows[dataKey].label = $(this).val();
+          redrawChart(chart);
+        };
+        
+        var changeNumberInput = function changeNumberInput(){
+          var i = $(this).parent('td').index() - 1;
+          
+          // prevent manual entry of out-of-range values
+          if ($(this).val() > 6000) {
+            $(this).val(6000);
+          } else if ($(this).val() < 0) {
+            $(this).val(0);
+          } else if (isNaN($(this).val())) {
+            $(this).val(chart.rows[$(this).closest('tr').attr('data-key')].values[i]);
+          }              
+          chart.rows[$(this).closest('tr').attr('data-key')].values[i] = $(this).val();
+          redrawChart(chart);
+        };
+        
         // go through each row th in the thead to determine column headings
         table.find('thead tr th').each(function(){
           chart.series.push($(this).text());
@@ -185,35 +214,23 @@ $(document).ready(function() {
         
         // go through each row in the tbody to determine values
         table.find('tbody tr[data-key]').each(function(){
+          var labelInput = $(this).find('th[scope=row] input[type=text]');
+          
           var row = {
-            label: $(this).find('th[scope=row]').text(),
+            label: labelInput.val(),
             values: []
           };
+          
+          labelInput.bind('focus', focusInput);
+          labelInput.bind('blur', blurInput);
+          labelInput.bind('change keyup', changeLabelInput);
           
           $(this).find('td input[type=number]').each(function(i, input){
             row.values.push(parseInt($(this).val(),10));
 
-            $(input).bind('focus', function(){
-              $(this).closest('td').addClass('focus');
-            });
-            
-            $(input).bind('blur', function(){
-              $(this).closest('td').removeClass('focus');
-            });
-            
-            $(input).bind('change blur click keyup', function(){
-              // prevent manual entry of out-of-range values
-              if ($(this).val() > 6000) {
-                $(this).val(6000);
-              } else if ($(this).val() < 0) {
-                $(this).val(0);
-              } else if (isNaN($(this).val())) {
-                $(this).val(chart.rows[$(this).closest('tr').attr('data-key')].values[i]);
-              }              
-              chart.rows[$(this).closest('tr').attr('data-key')].values[i] = $(this).val();
-              redrawChart(chart);
-            });
-            
+            $(input).bind('focus', focusInput);
+            $(input).bind('blur', blurInput);
+            $(input).bind('change blur click keyup', changeNumberInput);
           });
           
           chart.rows[$(this).attr('data-key')] = row;
@@ -237,6 +254,46 @@ $(document).ready(function() {
 
         // bind event handlers to this table
         table.bind('seriesChange.charter', seriesChangedHandler);
+        
+        // bind handler for button to add new rows
+        var newRowButton = table.find('tbody tr.template td.add a');
+        newRowButton.bind('click', function(){
+          var newRow = table.find('tbody tr.template').clone();
+          var uuid = Math.uuid();
+          var values = [];
+          jQuery.each(chart.series, function(){
+            values.push(0);
+          });
+          
+          chart.rows[uuid] = {
+            label: 'Label',
+            values: values
+          };
+
+          newRow.find('td.add').remove();
+          newRow.attr('data-key', uuid);
+          newRow.removeClass('template');
+          newRow.find('input').removeProp('disabled');
+          newRow.find('input[type=number]').val(0);
+          newRow.css({display: 'none'});
+          
+          newRow.find('th input[type=text]').val('Label');
+          newRow.find('th input[type=text]').bind('focus', focusInput);
+          newRow.find('th input[type=text]').bind('blur', blurInput);
+          newRow.find('th input[type=text]').bind('change keyup', changeLabelInput);
+          newRow.find('td input[type=number]').bind('focus', focusInput);
+          newRow.find('td input[type=number]').bind('blur', blurInput);          
+          newRow.find('td input[type=number]').bind('change blur click keyup', changeNumberInput);
+          
+          table.find('tbody tr.template').before(newRow);
+          newRow.show();
+          
+          newRow.find('th input[type=text]').focus();
+          
+          // redraw the chart
+          redrawChart(chart);
+        });        
+        
       }
     });
     
