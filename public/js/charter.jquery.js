@@ -4,10 +4,13 @@ $(document).ready(function() {
   jQuery.fn.charter = function charter(){
     $(this).each(function(){
       var table = $(this);
+      
       var colours = {
         0: '#f66c1d',
         1: '#7d007f'
       };
+      
+      // define a few style objects that'll be used in a few places
       var defaultTextStyle = {
         'font-family': 'Lucida Grande, Calibri, Tahoma, sans-serif',
         'font-size': '11px'
@@ -18,11 +21,8 @@ $(document).ready(function() {
       var strokeTickMarks = {'stroke-width': 0.5};
       var strokeAxes = {'stroke-width': 1};
       
-      // has to be a table element
-      // has to have a class of charter
-      // mustn't have a data-charter-id attribute set
-      
-      if (this.nodeName == 'TABLE' && table.hasClass('charter') && !table.prop('data-charter-id'))
+      // has to be a table element with a class of charter
+      if (this.nodeName == 'TABLE' && table.hasClass('charter'))
       {
         var chart = {
           series: [],
@@ -37,7 +37,7 @@ $(document).ready(function() {
           table.find('tbody tr[data-key=' + seriesData.key + '] td').each(function(i, element){
             if (i == chart.series.indexOf(seriesData.series)) {
               $(element).find('input[type=number]').val(seriesData.value);
-              chart.rows[seriesData.key][chart.series.indexOf(seriesData.series)] = seriesData.value;
+              chart.rows[seriesData.key].values[chart.series.indexOf(seriesData.series)] = seriesData.value;
             }
           });
         }; // seriesChangedHandler();
@@ -60,7 +60,6 @@ $(document).ready(function() {
           }
           chart.graph.path('M90 440L100 440').attr(strokeTickMarks);
           chart.graph.text(80, 440, 0).attr(verticalLabelStyle);
-          
 
           // draw bars and tick marks for horizontal scale
           var hmarkers = 5;
@@ -107,7 +106,7 @@ $(document).ready(function() {
                   value: Math.round((bar.attr('height') / 420) * chart.yScale)
                 };
                 
-                // set new value by raising event.
+                // trigger custom event that the series’ value has changed
                 table.trigger('seriesChange.charter', seriesChange);
               };
               
@@ -148,6 +147,7 @@ $(document).ready(function() {
           });
           
         }; // redrawChart();
+        
         
         // go through each row th in the thead to determine column headings
         table.find('thead tr th').each(function(){
