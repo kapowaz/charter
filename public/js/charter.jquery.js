@@ -31,8 +31,6 @@ $(document).ready(function() {
         'font-size': '11px'
       };
       var verticalLabelStyle = jQuery.extend({'text-anchor': 'end'}, defaultTextStyle);
-      var horizontalLabelStyle = jQuery.extend({'width': 130}, defaultTextStyle);
-      var seriesKeyLabelStyle = jQuery.extend({'width': 80, 'text-anchor': 'start'}, defaultTextStyle);
       var strokeTickMarks = {'stroke-width': 0.5};
       var strokeAxes = {'stroke-width': 1};
       
@@ -76,23 +74,22 @@ $(document).ready(function() {
           }
           
           // final vertical tick mark
-          
           var finalTick = 'M' + (metrics.padding.left - metrics.ticks.length) + ' ' + (metrics.height - metrics.padding.bottom) + 'L' + metrics.padding.left + ' ' + (metrics.height - metrics.padding.bottom);
           chart.graph.path(finalTick).attr(strokeTickMarks);
           chart.graph.text(metrics.padding.left - (metrics.ticks.length * 2), (metrics.height - metrics.padding.bottom), 0).attr(verticalLabelStyle);
 
           // draw bars and tick marks for horizontal scale
           var i = 0;
+          var sectionWidth = (metrics.width - (metrics.padding.left + metrics.padding.right)) / objectLength(chart.rows);
+          
           jQuery.each(chart.rows, function(key, row){
-            
             var xPosition = ((metrics.width - (metrics.padding.left + metrics.padding.right)) / objectLength(chart.rows) * i) + metrics.padding.left;
             chart.graph.path('M' + xPosition + ' ' + (metrics.height - metrics.padding.bottom) + 'L' + xPosition + ' ' + (metrics.height - metrics.padding.bottom + metrics.ticks.length)).attr(strokeTickMarks);
-            label = chart.graph.text(xPosition + 65, 460, row.label).attr(horizontalLabelStyle);
+            label = chart.graph.text(xPosition + (sectionWidth / 2), (metrics.height - metrics.padding.bottom + (metrics.ticks.length * 2)), row.label).attr(jQuery.extend({'width': sectionWidth}, defaultTextStyle));
             
             jQuery.each(row.values, function(j, value){
               // draw each bar
               var series = chart.series[j];
-              var sectionWidth = (metrics.width - (metrics.padding.left + metrics.padding.right)) / objectLength(chart.rows);
               var barHeight = value / chart.yScale * (metrics.height - (metrics.padding.top + metrics.padding.bottom));
               var barWidth = (sectionWidth - ((chart.series.length + 1) * metrics.gap)) / chart.series.length;
               var xPosition = (i * sectionWidth) + (j * (barWidth + metrics.gap)) + metrics.padding.left + metrics.gap;
@@ -176,7 +173,7 @@ $(document).ready(function() {
             chart.graph.text(
               (metrics.width - metrics.padding.right) + (metrics.seriesKeyGap * 2) + metrics.seriesKeySize + metrics.seriesKeyLabelGap, 
               ((metrics.seriesKeySize + metrics.seriesKeyGap) * i) + seriesKeyYPosition + metrics.seriesKeyGap + (metrics.seriesKeySize / 2),
-              name).attr(seriesKeyLabelStyle);
+              name).attr(jQuery.extend({'text-anchor': 'start'}, defaultTextStyle));
           });
           
         }; // redrawChart();
